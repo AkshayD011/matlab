@@ -1,0 +1,312 @@
+clear all, clc, close all;
+
+%%
+syms q1 q2 q_dot1 q_dot2
+
+q_dot = [q_dot1; q_dot2];
+
+L1=1; L2=0.5;
+
+% Position vector of End Effector wrt {0,0} - Fixed Frame
+X_EE = [L1*cos(q1) + L2*cos(q1+q2);...
+          L1*sin(q1) + L2*sin(q1+q2)];
+
+% Position vector of Joint 2 wrt {0,0} - Fixed Frame
+X_joint2 = [L1*cos(q1);...
+            L1*sin(q1)];
+
+% Position vector of Joint 1 wrt {0,0} - Fixed Frame
+X_joint1 = [0;...
+            0];
+
+
+%% Case: 01:
+q1 = pi/4;
+q2 = pi+0.1;
+
+X_EE_Case1     = double(subs(X_EE));
+X_joint2_Case1 = double(subs(X_joint2));
+
+
+%% plotting the ellipse of End-effector velocity state
+
+figure('units','normalized','outerposition',[0 0 0.5 1])
+a = 3;
+
+plot([X_joint1(1) X_joint2_Case1(1)],[X_joint1(2) X_joint2_Case1(2)],'b','LineWidth',1.5)
+hold on;
+
+plot([X_joint2_Case1(1) X_EE_Case1(1)],[X_joint2_Case1(2) X_EE_Case1(2)],'r','LineWidth',1.5)
+
+sz = 50;
+scatter(X_joint1(1) , X_joint1(2) , sz,'MarkerEdgeColor',[0 0 0],...
+              'MarkerFaceColor',[0 0 0],...
+              'LineWidth',1.5)
+
+sz = 50;
+scatter(X_joint2_Case1(1) , X_joint2_Case1(2) , sz,'MarkerEdgeColor',[0 0 0],...
+              'MarkerFaceColor',[0 0 0],...
+              'LineWidth',1.5)
+
+sz = 80;
+scatter(X_EE_Case1(1),X_EE_Case1(2),sz,'MarkerEdgeColor',[0 .5 .5],...
+              'MarkerFaceColor',[0 .7 .7],...
+              'LineWidth',1.5)
+
+
+
+xlim([-a a]);
+ylim([-a a])
+
+ylabel('Y-axis (m)', 'fontweight','bold','FontSize',11);
+xlabel('X-Axis (m)', 'fontweight','bold','FontSize',11);
+grid on; axis equal
+% title('Case 01: $q_1 = \frac{\pi}{4}$ and $q_2 = \frac{\pi}{4}$ ','interpreter','latex','fontweight','bold','FontSize',14)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+clear all, clc, close all;
+
+%% Initializing
+syms q1 q2 q_dot1 q_dot2
+
+q_dot = [q_dot1 - 0; q_dot2 - 0];
+
+L1=1; L2=0.5;
+
+J = [-L1*sin(q1) - L2*sin(q1+q2), -L2*sin(q1+q2);...
+      L1*cos(q1) + L2*cos(q1+q2),  L2*cos(q1+q2)];
+
+%% Case: 01:
+q1 = pi/4;
+q2 = (1*pi)/4;
+
+J_Case1 = double(subs(J));
+fprintf('Case:01\n\n');disp(J_Case1)
+fprintf('Rank of Jacobian for Case_01 is: %d\n ',rank(J_Case1));
+
+[~,S,V] = svd(J_Case1);
+ellEqn01  = q_dot' *(V*(S'*S)*V')* q_dot == 1;  
+
+%% Case: 02:
+q1 = pi/4;
+q2 = pi/2;
+
+J_Case2 = double(subs(J));
+fprintf('Case:01\n\n');disp(J_Case2)
+fprintf('Rank of Jacobian for Case_01 is: %d\n ',rank(J_Case2));
+
+[~,S,V] = svd(J_Case2);
+ellEqn02  = q_dot' *(V*(S'*S)*V')* q_dot == 1;  
+
+%% Case: 03:
+q1 = pi/4;
+q2 = pi + 0.1;
+
+J_Case3 = double(subs(J));
+fprintf('Case:01\n\n');disp(J_Case3)
+fprintf('Rank of Jacobian for Case_01 is: %d\n ',rank(J_Case3));
+
+[~,S,V] = svd(J_Case3);
+ellEqn03  = q_dot' *(V*(S'*S)*V')* q_dot == 1;  
+
+%% Case: 04:
+q1 = pi/4;
+q2 = pi;
+
+J_Case4 = double(subs(J));
+fprintf('Case:01\n\n');disp(J_Case4)
+fprintf('Rank of Jacobian for Case_01 is: %d\n ',rank(J_Case4));
+
+[~,S,V] = svd(J_Case4);
+ellEqn04  = q_dot' *(V*(S'*S)*V')* q_dot == 1;  
+
+%% plotting the ellipse of End-effector velocity state
+
+figure('units','normalized','outerposition',[0 0 1 1])
+a = 15;
+
+subplot(2,2,1)
+fimplicit(ellEqn01,[-a a -a a],'LineWidth',2);
+ylabel('$\dot{q}_2 (rad/s)$', 'interpreter','latex','fontweight','bold','FontSize',11);
+xlabel('$\dot{q}_1 (rad/s)$', 'interpreter','latex','fontweight','bold','FontSize',11);
+grid on; axis equal
+% title( {'Case 1'},);
+title('Case 01: $q_1 = \frac{\pi}{4}$ and $q_2 = \frac{\pi}{4}$ ','interpreter','latex','fontweight','bold','FontSize',14)
+
+subplot(2,2,2)
+fimplicit(ellEqn02,[-a a -a a],'LineWidth',2);
+ylabel('$\dot{q}_2$ (rad/s)', 'interpreter','latex','fontweight','bold','FontSize',11);
+xlabel('$\dot{q}_1$ (rad/s)', 'interpreter','latex','fontweight','bold','FontSize',11);
+grid on; axis equal
+% title( {'Case 1'},);
+title('Case 02: $q_1 = \frac{\pi}{4}$ and $q_2 = \frac{\pi}{2}$ ','interpreter','latex','fontweight','bold','FontSize',14)
+
+subplot(223)
+fimplicit(ellEqn03,[-a a -a a],'LineWidth',2);
+ylabel('$\dot{q}_2$ (rad/s)', 'interpreter','latex','fontweight','bold','FontSize',11);
+xlabel('$\dot{q}_1$ (rad/s)', 'interpreter','latex','fontweight','bold','FontSize',11);
+grid on; axis equal
+% title( {'Case 1'},);
+title('Case 03 (Near Singularity): $q_1 = \frac{\pi}{4}$ and $q_2 = \pi + 0.1$ ','interpreter','latex','fontweight','bold','FontSize',14)
+
+a = 2000;
+subplot(224)
+fimplicit(ellEqn04,[-a a -a a],'LineWidth',2);
+ylabel('$\dot{q}_2$ (rad/s)', 'interpreter','latex','fontweight','bold','FontSize',11);
+xlabel('$\dot{q}_1$ (rad/s)', 'interpreter','latex','fontweight','bold','FontSize',11);
+grid on; axis equal
+% title( {'Case 1'},);
+title('Case 04 (At Singularity): $q_1 = \frac{\pi}{4}$ and $q_2 = \pi$ ','interpreter','latex','fontweight','bold','FontSize',14)
+
+
+sgtitle('Velocity Ellipse Plot','fontweight','bold','FontSize',16)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+Xe = 10;  
+Ye = 5;   
+L1 = 8;   
+L2 = 6;   
+
+kappa = (Xe^2 + Ye^2 - L1^2 - L2^2) / (2 * L1 * L2);
+q2 = acos(kappa);  
+
+alpha = atan2(Ye, Xe);
+beta = atan2(L2 * sin(q2), L1 + L2 * cos(q2));
+
+q1 = alpha - beta;  
+
+q1_deg = rad2deg(q1);
+q2_deg = rad2deg(q2);
+
+fprintf('q1 = %.2f degrees\n',q1_deg);
+fprintf('q2 = %.2f degrees\n',q2_deg);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+clear all; clc; close all;
+
+syms q1 q2 q_dot1 q_dot2 real
+
+q_dot = [q_dot1; q_dot2];
+
+L1 = 1; L2 = 0.5;
+
+J = [-L1*sin(q1) - L2*sin(q1+q2), -L2*sin(q1+q2); ...
+      L1*cos(q1) + L2*cos(q1+q2),  L2*cos(q1+q2)];
+
+X_EE = [L1*cos(q1) + L2*cos(q1+q2); L1*sin(q1) + L2*sin(q1+q2)];
+X_joint2 = [L1*cos(q1); L1*sin(q1)];
+X_joint1 = [0; 0];
+
+q1_val = pi/4;
+q2_val = pi/4;
+
+J_Case1 = double(subs(J, {q1, q2}, {q1_val, q2_val}));
+X_EE_Case1 = double(subs(X_EE, {q1, q2}, {q1_val, q2_val}));
+X_joint2_Case1 = double(subs(X_joint2, {q1, q2}, {q1_val, q2_val}));
+
+[~, S, V] = svd(J_Case1);
+
+A = V * (S' * S) * V';
+
+ellipse_func = @(x, y) [x; y]' * A * [x; y] - 1;
+
+figure('units', 'normalized', 'outerposition', [0 0 0.6 1]);
+
+a = 3;
+
+plot([X_joint1(1) X_joint2_Case1(1)], [X_joint1(2) X_joint2_Case1(2)], 'b', 'LineWidth', 1.5);
+hold on;
+plot([X_joint2_Case1(1) X_EE_Case1(1)], [X_joint2_Case1(2) X_EE_Case1(2)], 'r', 'LineWidth', 1.5);
+
+scatter(X_joint1(1), X_joint1(2), 50, 'k', 'filled');
+scatter(X_joint2_Case1(1), X_joint2_Case1(2), 50, 'k', 'filled');
+scatter(X_EE_Case1(1), X_EE_Case1(2), 80, 'MarkerEdgeColor', [0 .5 .5], 'MarkerFaceColor', [0 .7 .7], 'LineWidth', 1.5);
+
+fimplicit(@(x, y) ellipse_func(x - X_EE_Case1(1), y - X_EE_Case1(2)), ...
+          [-a+X_EE_Case1(1), a+X_EE_Case1(1), -a+X_EE_Case1(2), a+X_EE_Case1(2)], 'LineWidth', 2);
+
+xlim([-a a]);
+ylim([-a a]);
+
+ylabel('Y-axis (m)', 'fontweight', 'bold', 'FontSize', 11);
+xlabel('X-Axis (m)', 'fontweight', 'bold', 'FontSize', 11);
+grid on;
+axis equal;
+title('Velocity Ellipse Centered at End-Effector', 'interpreter', 'latex', 'fontweight', 'bold', 'FontSize', 14);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+clear all; clc; close all;
+
+% Define symbolic variables
+syms q1 q2 real
+L1 = 1;  % Link 1 length
+L2 = 0.5; % Link 2 length
+
+% Jacobian matrix
+J = [-L1*sin(q1) - L2*sin(q1+q2), -L2*sin(q1+q2);
+      L1*cos(q1) + L2*cos(q1+q2),  L2*cos(q1+q2)];
+
+% Define key points (S, I1, I2, F) - Choose appropriate values
+q_vals = [
+    0, pi/4;    % S
+    pi/6, pi/6; % I1
+    pi/4, pi/8; % I2
+    pi/3, pi/6; % F
+];
+
+figure;
+for i = 1:4
+    q1_val = q_vals(i,1);
+    q2_val = q_vals(i,2);
+    
+    % Compute Jacobian at this configuration
+    J_curr = double(subs(J, {q1, q2}, {q1_val, q2_val}));
+    
+    % SVD decomposition to get ellipse axes
+    [U, S, V] = svd(J_curr);
+    A = V * (S' * S) * V';
+    
+    % Ellipse function centered at the end-effector
+    X_EE = [L1*cos(q1) + L2*cos(q1+q2); L1*sin(q1) + L2*sin(q1+q2)];
+    X_EE_val = double(subs(X_EE, {q1, q2}, {q1_val, q2_val}));
+    
+    ellipse_func = @(x, y) [x; y]' * A * [x; y] - 1;
+    
+    subplot(2,2,i);
+    fimplicit(@(x,y) ellipse_func(x - X_EE_val(1), y - X_EE_val(2)), [-2 2 -2 2], 'LineWidth', 1.5);
+    hold on;
+    scatter(X_EE_val(1), X_EE_val(2), 80, 'k', 'filled');
+    xlabel('X'); ylabel('Y');
+    title(sprintf('Task Space Ellipse at (%.2f, %.2f)', q1_val, q2_val));
+    axis equal; grid on;
+end
+sgtitle('Velocity Ellipses at Key Points');
+
+%% Finding Isotropic Condition
+% At isotropic points, J'J must have equal eigenvalues
+syms q1_iso q2_iso real
+J_iso = subs(J, {q1, q2}, {q1_iso, q2_iso});
+eigs_JTJ = eig(J_iso' * J_iso);
+iso_condition = simplify(eigs_JTJ(1) - eigs_JTJ(2) == 0);
+disp('Isotropic Condition:');
+disp(iso_condition);
+
+%% Plotting Isotropic Point Configuration
+q1_iso_val = pi/4; % Example isotropic point
+q2_iso_val = pi/4; 
+J_iso_val = double(subs(J, {q1, q2}, {q1_iso_val, q2_iso_val}));
+[U_iso, S_iso, V_iso] = svd(J_iso_val);
+A_iso = V_iso * (S_iso' * S_iso) * V_iso';
+X_EE_iso = double(subs(X_EE, {q1, q2}, {q1_iso_val, q2_iso_val}));
+
+figure;
+fimplicit(@(x,y) ([x; y] - X_EE_iso)' * A_iso * ([x; y] - X_EE_iso) - 1, [-2 2 -2 2], 'LineWidth', 2);
+hold on;
+scatter(X_EE_iso(1), X_EE_iso(2), 80, 'k', 'filled');
+xlabel('X'); ylabel('Y');
+title('Velocity Ellipse at Isotropic Point');
+grid on; axis equal;
+
